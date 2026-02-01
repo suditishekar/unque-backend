@@ -45,4 +45,34 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
+// View available slots (students & professors)
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const { date, professorId } = req.query;
+
+    const filter = { isBooked: false };
+
+    if (date) {
+      filter.date = date;
+    }
+
+    if (professorId) {
+      filter.professor = professorId;
+    }
+
+    const slots = await Availability.find(filter)
+      .populate('professor', 'name email role')
+      .sort({ date: 1, startTime: 1 });
+
+    res.status(200).json({
+      count: slots.length,
+      slots
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error'
+    });
+  }
+});
+
 module.exports = router;
