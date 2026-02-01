@@ -1,12 +1,12 @@
 const express = require('express');
 const userRoutes = require('./routes/userRoutes');
+const availabilityRoutes = require('./routes/availabilityRoutes');
 
 const app = express();
 
 app.use(express.json());
-
-// Mount user routes
 app.use('/api/users', userRoutes);
+app.use('/api/availability', availabilityRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
