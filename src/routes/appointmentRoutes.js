@@ -69,4 +69,64 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
+// Student cancels an appointment
+router.patch('/:id/cancel', authMiddleware, async (req, res) => {
+  try {
+    // Role check
+    if (req.user.role !== 'student') {
+      return res.status(403).json({
+        message: 'Only students can cancel appointments'
+      });
+    }
+
+    const appointmentId = req.params.id;
+
+    // Find appointment
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({
+        message: 'Appointment not found'
+      });
+    }
+
+    // Ensure student owns the appointment
+    if (appointment.student.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: 'You are not allowed to cancel this appointment'
+      });
+    }
+
+    // Check if already cancelled
+    if (appointment.status === 'cancelled') {
+      return res.status(400).json({
+        message: 'Appointment is already cancelled'
+      });
+    }
+
+    // Cancel appointment
+    appointment.status = 'cancelled';
+    await appointment.save();
+
+    // Free availability slot
+    await Availability.findOneAndUpdate(
+      {
+        professor: appointment.professor,
+        date: appointment.date,
+        startTime: appointment.startTime,
+        endTime: appointment.endTime
+      },
+      { isBooked: false }
+    );
+
+    res.status(200).json({
+      message: 'Appointment cancelled successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error'
+    });
+  }
+});
+
 module.exports = router;
