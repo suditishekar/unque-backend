@@ -110,12 +110,4 @@ res.status(200).json({
   }
 });
 
-// Protected test route-debugging
-router.get('/me', authMiddleware, (req, res) => {
-  res.json({
-    message: 'Access granted',
-    user: req.user
-  });
-});
-
 module.exports = router;
