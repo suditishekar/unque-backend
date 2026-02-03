@@ -69,13 +69,12 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// Student cancels an appointment
+// Professor cancels an appointment
 router.patch('/:id/cancel', authMiddleware, async (req, res) => {
   try {
-    // Role check
-    if (req.user.role !== 'student') {
+    if (req.user.role !== 'professor') {
       return res.status(403).json({
-        message: 'Only students can cancel appointments'
+        message: 'Only professors can cancel appointments'
       });
     }
 
@@ -90,8 +89,8 @@ router.patch('/:id/cancel', authMiddleware, async (req, res) => {
       });
     }
 
-    // Ensure student owns the appointment
-    if (appointment.student.toString() !== req.user.id) {
+    // Ensure professor owns the appointment
+    if (appointment.professor.toString() !== req.user.id) {
       return res.status(403).json({
         message: 'You are not allowed to cancel this appointment'
       });
@@ -182,6 +181,5 @@ router.get('/professor', authMiddleware, async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;
