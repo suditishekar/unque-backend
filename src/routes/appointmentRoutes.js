@@ -129,4 +129,59 @@ router.patch('/:id/cancel', authMiddleware, async (req, res) => {
   }
 });
 
+// Student views their pending appointments
+router.get('/student', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'student') {
+      return res.status(403).json({
+        message: 'Only students can view student appointments'
+      });
+    }
+
+    const appointments = await Appointment.find({
+      student: req.user.id,
+      status: 'booked'
+    })
+      .populate('professor', 'name email')
+      .sort({ date: 1, startTime: 1 });
+
+    res.status(200).json({
+      count: appointments.length,
+      appointments
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error'
+    });
+  }
+});
+
+// Professor views their pending appointments
+router.get('/professor', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'professor') {
+      return res.status(403).json({
+        message: 'Only professors can view professor appointments'
+      });
+    }
+
+    const appointments = await Appointment.find({
+      professor: req.user.id,
+      status: 'booked'
+    })
+      .populate('student', 'name email')
+      .sort({ date: 1, startTime: 1 });
+
+    res.status(200).json({
+      count: appointments.length,
+      appointments
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error'
+    });
+  }
+});
+
+
 module.exports = router;
